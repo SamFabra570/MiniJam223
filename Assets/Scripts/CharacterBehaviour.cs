@@ -110,8 +110,8 @@ public class CharacterBehaviour : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(feetPos, groundCheckRadius);
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(origin, direction * raycastDistance);
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawLine(origin, direction * raycastDistance);
     }
 
     private void Jump()
