@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class CharacterBehaviour : MonoBehaviour
 {
+    public static CharacterBehaviour Instance;
+    
     [Header ("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private bool canMove = true;
@@ -20,6 +22,19 @@ public class CharacterBehaviour : MonoBehaviour
     private Vector2 feetPos;
     
     private Rigidbody2D rb;
+
+    public Transform levelStart;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -58,7 +73,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             if (isGrounded())
             {
-                Debug.Log("i wanna jump sooo bad");
+                //Debug.Log("i wanna jump sooo bad");
                 Jump();
             }
         }
@@ -70,7 +85,7 @@ public class CharacterBehaviour : MonoBehaviour
             {
                 if (isGrounded())
                 {
-                    Debug.Log("i wanna jump sooo bad");
+                    //Debug.Log("i wanna jump sooo bad");
                     Jump();
                 }
             }
@@ -86,7 +101,7 @@ public class CharacterBehaviour : MonoBehaviour
         Vector2 origin = transform.position;
         feetPos = origin + new Vector2(0.25f, -0.4f);;
         
-        Debug.Log("NOT ON THE GROUND AAAAAAA");
+        //Debug.Log("NOT ON THE GROUND AAAAAAA");
         
         return Physics2D.OverlapCircle(feetPos, groundCheckRadius, groundLayer);
     }
@@ -96,7 +111,7 @@ public class CharacterBehaviour : MonoBehaviour
         Vector2 origin = transform.position;
         feetPos = origin + new Vector2(0.5f, -0.45f);;
         
-        Debug.Log("ITS A LEAP OF FAITH");
+        //Debug.Log("ITS A LEAP OF FAITH");
         
         return Physics2D.OverlapCircle(feetPos, groundCheckRadius, groundLayer);
     }
@@ -117,5 +132,18 @@ public class CharacterBehaviour : MonoBehaviour
     private void Jump()
     {
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+    }
+
+    // private void OnTriggerEnter2D(Collider2D other)
+    // {
+    //     if (other.CompareTag("KillBox"))
+    //     {
+    //         GameManager.Instance.EndGame();
+    //     }
+    // }
+
+    public void ResetPosition()
+    {
+        transform.position = levelStart.position;
     }
 }
