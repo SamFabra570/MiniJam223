@@ -5,9 +5,14 @@ public class CharacterBehaviour : MonoBehaviour
 {
     public static CharacterBehaviour Instance;
     
+    [SerializeField] private Animator animator;
+    private Rigidbody2D rb;
+
+    public Transform levelStart;
+    
     [Header ("Movement")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private bool canMove = true;
+    [SerializeField] private bool isMoving = true;
     
     [Header ("Jumping")]
     [SerializeField] private float jumpForce = 8f;
@@ -17,14 +22,11 @@ public class CharacterBehaviour : MonoBehaviour
     [Header("GroundCheck")] 
     [SerializeField] private float groundCheckRadius = 0.2f;
     [SerializeField] private LayerMask groundLayer;
-    //private bool isGrounded = true;
-    
     private Vector2 feetPos;
+
+    [SerializeField] private float xOffset = 0.25f;
+    [SerializeField] private float yOffset = -0.7f;
     
-    private Rigidbody2D rb;
-
-    public Transform levelStart;
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -38,17 +40,37 @@ public class CharacterBehaviour : MonoBehaviour
 
     private void Start()
     {
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
     }
 
     private void Update()
     {
         DetectObstacle();
+        
+        if (isBlockStoppingPath()) 
+            Debug.Log("IS BLOCK IS BLOCKGIN");
+
+        if (rb.linearVelocityX <= 0.1 && isMoving)
+        {
+            isMoving = false;
+            
+            // if (isBlockStoppingPath())
+            //     isMoving = false;
+        }
+        else if (!isMoving)
+        {
+            if (!isBlockStoppingPath()) 
+                isMoving = true;
+        }
+        
+        animator.SetBool("IsGrounded", isGrounded());
+        animator.SetBool("IsMoving", isMoving);
     }
 
     private void FixedUpdate()
     {
-        if (canMove)
+        if (isMoving)
         {
             rb.linearVelocity = new Vector2(moveSpeed, rb.linearVelocity.y);
         }
@@ -60,6 +82,9 @@ public class CharacterBehaviour : MonoBehaviour
 
     private void DetectObstacle()
     {
+        // if (!isMoving)
+        //     return;
+        
         Vector2 origin = transform.position;
         Vector2 direction = Vector2.right;
         
@@ -90,8 +115,8 @@ public class CharacterBehaviour : MonoBehaviour
                 }
             }
             
-            if (hit.collider != null) 
-                Debug.Log("" + hit.collider.tag);
+            // if (hit.collider != null) 
+            //     Debug.Log("" + hit.collider.tag);
         }
     }
 
@@ -99,7 +124,7 @@ public class CharacterBehaviour : MonoBehaviour
     private bool isGrounded()
     {
         Vector2 origin = transform.position;
-        feetPos = origin + new Vector2(0.25f, -0.4f);;
+        feetPos = origin + new Vector2(xOffset, yOffset);;
         
         //Debug.Log("NOT ON THE GROUND AAAAAAA");
         
@@ -109,21 +134,33 @@ public class CharacterBehaviour : MonoBehaviour
     private bool isGroundContinuing()
     {
         Vector2 origin = transform.position;
-        feetPos = origin + new Vector2(0.5f, -0.45f);;
+        feetPos = origin + new Vector2(xOffset + 0.65f, yOffset - 0.05f);;
         
         //Debug.Log("ITS A LEAP OF FAITH");
         
         return Physics2D.OverlapCircle(feetPos, groundCheckRadius, groundLayer);
     }
     
+    private bool isBlockStoppingPath()
+    {
+        Vector2 origin = transform.position;
+        
+        //Debug.Log("ITS A LEAP OF FAITH");
+
+        return Physics2D.OverlapCircle(origin + new Vector2(1, 0.25f), groundCheckRadius, groundLayer);
+    }
+    
     private void OnDrawGizmos()
     {
         Vector2 origin = transform.position;
-        feetPos = origin + new Vector2(0.25f, -0.4f);
+        feetPos = origin + new Vector2(xOffset, yOffset);
         Vector2 direction = Vector2.right;
         
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(feetPos, groundCheckRadius);
+        
+        Gizmos.color = Color.blueViolet;
+        Gizmos.DrawWireSphere(origin + new Vector2(1, 0.25f), groundCheckRadius);
 
         //Gizmos.color = Color.red;
         //Gizmos.DrawLine(origin, direction * raycastDistance);
@@ -131,7 +168,12 @@ public class CharacterBehaviour : MonoBehaviour
 
     private void Jump()
     {
+        if (!isMoving)
+            return;
+        
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        
+        animator.SetTrigger("Jump");
     }
 
     // private void OnTriggerEnter2D(Collider2D other)

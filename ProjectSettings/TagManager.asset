@@ -8,6 +8,7 @@ TagManager:
   - Ground
   - Obstacle
   - KillBox
+  - Trap
   layers:
   - Default
   - TransparentFX
